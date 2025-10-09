@@ -1,0 +1,13 @@
+// Módulo Infrastructure - Conhece Domain, mas NÃO conhece Application
+// Contém implementações de adapters (repositórios, APIs, mensageria, etc.)
+
+dependencies {
+    // Depende do Domain
+    implementation project(':domain')
+    
+    // Dependências de infraestrutura
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    runtimeOnly 'com.h2database:h2'
+}
+

@@ -1,0 +1,51 @@
+// Módulo Domain - Não depende de nenhum outro módulo
+// Contém as entidades de negócio, value objects, interfaces de portas e lógica de domínio pura
+//
+// ⚠️ REGRA IMPORTANTE: Domain NUNCA deve ter dependências de frameworks!
+// - SEM Spring
+// - SEM JPA
+// - SEM qualquer framework específico
+// Apenas Java puro e bibliotecas essenciais
+
+dependencies {
+    // Domain não tem dependências de outros módulos
+    // Apenas dependências essenciais como validação
+    implementation 'jakarta.validation:jakarta.validation-api'
+    
+    // Dependências de teste - SOMENTE para testes, não para código de produção
+    testImplementation 'org.mockito:mockito-core'
+    testImplementation 'org.mockito:mockito-junit-jupiter'
+}
+
+// Configuração para GARANTIR que não há dependências proibidas
+configurations.all {
+    resolutionStrategy {
+        eachDependency { DependencyResolveDetails details ->
+            // Bloqueia qualquer dependência do Spring no Domain
+            if (details.requested.group.startsWith('org.springframework')) {
+                throw new GradleException(
+                    """
+                    ❌ ERRO: Domain não pode ter dependências do Spring!
+                    Dependência bloqueada: ${details.requested}
+                    
+                    O módulo Domain deve ser PURO e independente de frameworks.
+                    Use apenas Java puro e bibliotecas essenciais.
+                    """.stripIndent()
+                )
+            }
+            // Bloqueia JPA/Hibernate no Domain
+            if (details.requested.group.startsWith('org.hibernate') ||
+                details.requested.group.startsWith('jakarta.persistence')) {
+                throw new GradleException(
+                    """
+                    ❌ ERRO: Domain não pode ter dependências do JPA/Hibernate!
+                    Dependência bloqueada: ${details.requested}
+                    
+                    O módulo Domain deve ser PURO e independente de frameworks.
+                    """.stripIndent()
+                )
+            }
+        }
+    }
+}
+

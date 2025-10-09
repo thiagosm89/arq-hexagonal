@@ -1,0 +1,6 @@
+rootProject.name = 'arq-hexagonal'
+
+include 'domain'
+include 'infrastructure'
+include 'application'
+

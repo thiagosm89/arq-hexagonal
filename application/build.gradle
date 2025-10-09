@@ -1,0 +1,17 @@
+// Módulo Application - Conhece Domain e Infrastructure
+// Contém casos de uso, serviços de aplicação e configurações
+
+plugins {
+    id 'org.springframework.boot'
+}
+
+dependencies {
+    // Depende do Domain e Infrastructure
+    implementation project(':domain')
+    implementation project(':infrastructure')
+    
+    // Dependências do Spring Boot
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+}
+

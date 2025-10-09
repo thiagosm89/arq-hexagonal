@@ -1,0 +1,123 @@
+### Exemplos de Requisições HTTP para testar a API
+### Use em IDEs como IntelliJ IDEA ou VS Code com extensão REST Client
+
+### Variáveis
+@baseUrl = http://localhost:8080/api/usuarios
+@contentType = application/json
+
+### ====================================
+### COMMANDS (Write) - Passam por Domain
+### ====================================
+
+### 1. Criar um novo usuário (Command)
+# POST - Passa por Domain: validação, verificação de email duplicado
+POST {{baseUrl}}
+Content-Type: {{contentType}}
+
+{
+  "nome": "João Silva",
+  "email": "joao.silva@example.com"
+}
+
+### 2. Criar outro usuário (Command)
+POST {{baseUrl}}
+Content-Type: {{contentType}}
+
+{
+  "nome": "Maria Santos",
+  "email": "maria.santos@example.com"
+}
+
+### 3. Atualizar usuário (Command)
+# PUT - Passa por Domain: validações e regras
+PUT {{baseUrl}}/1
+Content-Type: {{contentType}}
+
+{
+  "nome": "João Silva Atualizado",
+  "email": "joao.atualizado@example.com"
+}
+
+### 4. Remover usuário (Command)
+# DELETE - Passa por Domain: verificação de existência
+DELETE {{baseUrl}}/1
+
+### ====================================
+### QUERIES (Read) - Bypass Domain
+### ====================================
+
+### 5. Listar todos os usuários (Query)
+# GET - Bypass: busca simples sem lógica
+GET {{baseUrl}}
+
+### 6. Buscar usuário por ID (Query)
+# GET - Bypass: busca simples
+GET {{baseUrl}}/1
+
+### 7. Buscar usuário por email (Query)
+# GET - Bypass: busca simples
+GET {{baseUrl}}/email/joao.silva@example.com
+
+### 8. Contar total de usuários (Query)
+# GET - Bypass: estatística simples
+GET {{baseUrl}}/count
+
+### ====================================
+### CASOS DE ERRO
+### ====================================
+
+### 9. Tentar criar usuário com email duplicado (deve falhar - 400)
+POST {{baseUrl}}
+Content-Type: {{contentType}}
+
+{
+  "nome": "Outro Usuário",
+  "email": "joao.silva@example.com"
+}
+
+### 10. Tentar criar usuário com dados inválidos (deve falhar - 400)
+POST {{baseUrl}}
+Content-Type: {{contentType}}
+
+{
+  "nome": "",
+  "email": "emailinvalido"
+}
+
+### 11. Buscar usuário inexistente (deve retornar 404)
+GET {{baseUrl}}/9999
+
+### ====================================
+### FLUXO COMPLETO DE TESTE
+### ====================================
+
+### 12. Criar usuário para teste
+POST {{baseUrl}}
+Content-Type: {{contentType}}
+
+{
+  "nome": "Teste Completo",
+  "email": "teste@example.com"
+}
+
+### 13. Verificar que foi criado (buscar por email)
+GET {{baseUrl}}/email/teste@example.com
+
+### 14. Atualizar o usuário
+PUT {{baseUrl}}/2
+Content-Type: {{contentType}}
+
+{
+  "nome": "Teste Atualizado",
+  "email": "teste.atualizado@example.com"
+}
+
+### 15. Verificar atualização
+GET {{baseUrl}}/2
+
+### 16. Deletar o usuário
+DELETE {{baseUrl}}/2
+
+### 17. Verificar que foi deletado (deve retornar 404)
+GET {{baseUrl}}/2
+
