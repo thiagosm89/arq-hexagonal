@@ -13,6 +13,10 @@ dependencies {
     // Dependências do Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    
+    // Dependências para testes
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework:spring-aspects'
+    testImplementation 'org.aspectj:aspectjweaver'
 }
 
