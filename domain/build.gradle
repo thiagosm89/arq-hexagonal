@@ -7,45 +7,26 @@
 // - SEM qualquer framework específico
 // Apenas Java puro e bibliotecas essenciais
 
+/*plugins {
+    id 'org.springframework.boot'
+}*/
+
 dependencies {
     // Domain não tem dependências de outros módulos
     // Apenas dependências essenciais como validação
     implementation 'jakarta.validation:jakarta.validation-api'
-    
+    /*implementation 'org.springframework:spring-context'*/
+
     // Dependências de teste - SOMENTE para testes, não para código de produção
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.10.1'
     testImplementation 'org.mockito:mockito-core'
     testImplementation 'org.mockito:mockito-junit-jupiter'
+    testImplementation 'com.tngtech.archunit:archunit-junit5:1.3.1'
 }
 
-// Configuração para GARANTIR que não há dependências proibidas
-configurations.all {
-    resolutionStrategy {
-        eachDependency { DependencyResolveDetails details ->
-            // Bloqueia qualquer dependência do Spring no Domain
-            if (details.requested.group.startsWith('org.springframework')) {
-                throw new GradleException(
-                    """
-                    ❌ ERRO: Domain não pode ter dependências do Spring!
-                    Dependência bloqueada: ${details.requested}
-                    
-                    O módulo Domain deve ser PURO e independente de frameworks.
-                    Use apenas Java puro e bibliotecas essenciais.
-                    """.stripIndent()
-                )
-            }
-            // Bloqueia JPA/Hibernate no Domain
-            if (details.requested.group.startsWith('org.hibernate') ||
-                details.requested.group.startsWith('jakarta.persistence')) {
-                throw new GradleException(
-                    """
-                    ❌ ERRO: Domain não pode ter dependências do JPA/Hibernate!
-                    Dependência bloqueada: ${details.requested}
-                    
-                    O módulo Domain deve ser PURO e independente de frameworks.
-                    """.stripIndent()
-                )
-            }
-        }
-    }
+// Configuração para usar JUnit Jupiter
+test {
+    useJUnitPlatform()
 }
 

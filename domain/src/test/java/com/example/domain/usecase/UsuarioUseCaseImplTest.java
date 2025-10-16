@@ -4,6 +4,8 @@ import com.example.domain.exception.UsuarioInvalidoException;
 import com.example.domain.exception.UsuarioNaoEncontradoException;
 import com.example.domain.model.Usuario;
 import com.example.domain.ports.out.UsuarioOutboundPort;
+import com.example.domain.valueobject.CPF;
+import com.example.domain.valueobject.Email;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,10 +41,8 @@ class UsuarioUseCaseImplTest {
         usuarioUseCase = new UsuarioUseCaseImpl(usuarioOutboundPort);
         
         // Cria usuário válido com Value Objects
-        com.example.domain.valueobject.Email email = 
-            com.example.domain.valueobject.Email.of("joao@example.com");
-        com.example.domain.valueobject.CPF cpf = 
-            com.example.domain.valueobject.CPF.of("123.456.789-09");
+        Email email = Email.of("joao@example.com");
+        CPF cpf = CPF.of("123.456.789-09");
         usuarioValido = new Usuario(1L, "João Silva", email, cpf);
     }
     
@@ -51,10 +51,8 @@ class UsuarioUseCaseImplTest {
         when(usuarioOutboundPort.buscarPorEmail(anyString())).thenReturn(Optional.empty());
         when(usuarioOutboundPort.salvar(any(Usuario.class))).thenReturn(usuarioValido);
         
-        com.example.domain.valueobject.Email email = 
-            com.example.domain.valueobject.Email.of("joao@example.com");
-        com.example.domain.valueobject.CPF cpf = 
-            com.example.domain.valueobject.CPF.of("123.456.789-09");
+        Email email = Email.of("joao@example.com");
+        CPF cpf = CPF.of("123.456.789-09");
         
         Usuario resultado = usuarioUseCase.criarUsuario("João Silva", email, cpf);
         
@@ -66,8 +64,7 @@ class UsuarioUseCaseImplTest {
     
     @Test
     void deveLancarExcecaoAoCriarUsuarioComNomeInvalido() {
-        com.example.domain.valueobject.Email email = 
-            com.example.domain.valueobject.Email.of("joao@example.com");
+        Email email = Email.of("joao@example.com");
         
         assertThrows(UsuarioInvalidoException.class, () -> {
             usuarioUseCase.criarUsuario("", email, null);
@@ -80,8 +77,7 @@ class UsuarioUseCaseImplTest {
     void deveLancarExcecaoAoCriarUsuarioComEmailDuplicado() {
         when(usuarioOutboundPort.buscarPorEmail(anyString())).thenReturn(Optional.of(usuarioValido));
         
-        com.example.domain.valueobject.Email email = 
-            com.example.domain.valueobject.Email.of("joao@example.com");
+        Email email = Email.of("joao@example.com");
         
         assertThrows(UsuarioInvalidoException.class, () -> {
             usuarioUseCase.criarUsuario("Outro Usuário", email, null);
@@ -112,10 +108,16 @@ class UsuarioUseCaseImplTest {
     
     @Test
     void deveListarTodosUsuarios() {
-        List<Usuario> usuarios = Arrays.asList(
-            new Usuario(1L, "João Silva", "joao@example.com"),
-            new Usuario(2L, "Maria Santos", "maria@example.com")
-        );
+        // Cria usuários válidos com Value Objects
+        Email email1 = Email.of("joao@example.com");
+        CPF cpf1 = CPF.of("123.456.789-09");
+        Usuario usuario1 = new Usuario(1L, "João Silva", email1, cpf1);
+        
+        Email email2 = Email.of("maria@example.com");
+        CPF cpf2 = CPF.of("987.654.321-00");
+        Usuario usuario2 = new Usuario(2L, "Maria Santos", email2, cpf2);
+        
+        List<Usuario> usuarios = Arrays.asList(usuario1, usuario2);
         when(usuarioOutboundPort.buscarTodos()).thenReturn(usuarios);
         
         List<Usuario> resultado = usuarioUseCase.listarTodosUsuarios();
@@ -145,6 +147,43 @@ class UsuarioUseCaseImplTest {
         });
         
         verify(usuarioOutboundPort, never()).deletar(anyLong());
+    }
+    
+    @Test
+    void deveCriarUsuarioSemCPF() {
+        when(usuarioOutboundPort.buscarPorEmail(anyString())).thenReturn(Optional.empty());
+        when(usuarioOutboundPort.salvar(any(Usuario.class))).thenReturn(usuarioValido);
+        
+        Email email = Email.of("joao@example.com");
+        
+        Usuario resultado = usuarioUseCase.criarUsuario("João Silva", email, null);
+        
+        assertNotNull(resultado);
+        assertEquals("João Silva", resultado.getNome());
+        assertEquals(email, resultado.getEmail());
+        assertNull(resultado.getCpf());
+        verify(usuarioOutboundPort).salvar(any(Usuario.class));
+    }
+    
+    @Test
+    void deveLancarExcecaoAoCriarUsuarioComEmailInvalido() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            Email email = Email.of("email-invalido");
+            usuarioUseCase.criarUsuario("João Silva", email, null);
+        });
+        
+        verify(usuarioOutboundPort, never()).salvar(any(Usuario.class));
+    }
+    
+    @Test
+    void deveLancarExcecaoAoCriarUsuarioComCPFInvalido() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            Email email = Email.of("joao@example.com");
+            CPF cpf = CPF.of("123"); // CPF inválido
+            usuarioUseCase.criarUsuario("João Silva", email, cpf);
+        });
+        
+        verify(usuarioOutboundPort, never()).salvar(any(Usuario.class));
     }
 }
 

@@ -99,8 +99,7 @@ public class UsuarioCommandService {
             usuario.getId(),
             usuario.getNome(),
             usuario.getEmailAsString(),
-            usuario.getCpfAsString(),
-            usuario.temCpf() ? usuario.getCpf().getFormatted() : null
+            usuario.getCpfAsString()
         );
     }
 }
