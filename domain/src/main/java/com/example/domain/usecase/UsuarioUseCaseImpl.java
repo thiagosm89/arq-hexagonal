@@ -9,6 +9,7 @@ import com.example.domain.valueobject.CPF;
 import com.example.domain.valueobject.Email;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Implementação da lógica de negócio de Usuário
@@ -27,7 +28,11 @@ public class UsuarioUseCaseImpl implements UsuarioInboundPort {
     }
     
     @Override
-    public Usuario criarUsuario(String nome, Email email, CPF cpf) {
+    public Usuario criarUsuario(String nome, Email email, CPF cpf) throws UsuarioInvalidoException {
+        Objects.requireNonNull(nome, "nome null");
+        Objects.requireNonNull(email, "email null");
+        Objects.requireNonNull(cpf, "cpf null");
+
         // Email e CPF já vêm validados (Value Objects)!
         // Application fez a conversão e validação
         
@@ -41,16 +46,16 @@ public class UsuarioUseCaseImpl implements UsuarioInboundPort {
         
         // Verifica se já existe um usuário com o mesmo email
         // Usa o método getValue() para comparar com string do banco
-        usuarioOutboundPort.buscarPorEmail(email.getValue()).ifPresent(u -> {
+        if(usuarioOutboundPort.buscarPorEmail(email.getValue()).isPresent()) {
             throw new UsuarioInvalidoException("Já existe um usuário com o email: " + email.getValue());
-        });
+        }
         
         // Salva o usuário
         return usuarioOutboundPort.salvar(usuario);
     }
     
     @Override
-    public Usuario buscarUsuarioPorId(Long id) {
+    public Usuario buscarUsuarioPorId(Long id) throws UsuarioNaoEncontradoException {
         return usuarioOutboundPort.buscarPorId(id)
                 .orElseThrow(() -> new UsuarioNaoEncontradoException(id));
     }
@@ -61,7 +66,7 @@ public class UsuarioUseCaseImpl implements UsuarioInboundPort {
     }
     
     @Override
-    public void removerUsuario(Long id) {
+    public void removerUsuario(Long id) throws UsuarioNaoEncontradoException {
         // Verifica se o usuário existe antes de remover
         buscarUsuarioPorId(id);
         usuarioOutboundPort.deletar(id);

@@ -1,7 +1,6 @@
 package com.example.application.exception;
 
-import com.example.domain.exception.UsuarioInvalidoException;
-import com.example.domain.exception.UsuarioNaoEncontradoException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,40 +14,47 @@ import java.util.Map;
  * Handler Global de Exceções
  * Trata as exceções de domínio e converte em respostas HTTP apropriadas
  */
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     
-    @ExceptionHandler(UsuarioNaoEncontradoException.class)
-    public ResponseEntity<Map<String, Object>> handleUsuarioNaoEncontrado(UsuarioNaoEncontradoException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.NOT_FOUND.value());
-        body.put("error", "Not Found");
-        body.put("message", ex.getMessage());
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<Map<String, Object>> handleUsuarioNaoEncontrado(ApiException ex) {
+        ResponseErrorCode code = ex.getCode();
+
+        Map<String, Object> body = errorBuild(
+                code.getHttpStatus(),
+                code.getErrorKey(),
+                ex.getMessage()
+        );
         
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
-    }
-    
-    @ExceptionHandler(UsuarioInvalidoException.class)
-    public ResponseEntity<Map<String, Object>> handleUsuarioInvalido(UsuarioInvalidoException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", "Bad Request");
-        body.put("message", ex.getMessage());
-        
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+        return ResponseEntity.status(code.getHttpStatus()).body(body);
     }
     
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-        body.put("error", "Internal Server Error");
-        body.put("message", "Ocorreu um erro interno no servidor");
+        ResponseErrorCode internalServerError = ResponseErrorCode.INTERNAL_SERVER_ERROR;
+
+        String message = "Erro inesperado ocorreu. Nossa equipe está trabalhando nisso no momento.";
+
+        Map<String, Object> body = errorBuild(
+                internalServerError.getHttpStatus(),
+                internalServerError.getErrorKey(),
+                message
+        );
+
+        log.error(message, ex);
         
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
+    }
+
+    private Map<String, Object> errorBuild(HttpStatus httpStatus, String errorKey, String message) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", httpStatus);
+        body.put("error", errorKey);
+        body.put("message", message);
+        return body;
     }
 }
 

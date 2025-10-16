@@ -1,5 +1,7 @@
 package com.example.domain.ports.in;
 
+import com.example.domain.exception.UsuarioInvalidoException;
+import com.example.domain.exception.UsuarioNaoEncontradoException;
 import com.example.domain.model.Usuario;
 import com.example.domain.valueobject.CPF;
 import com.example.domain.valueobject.Email;
@@ -27,18 +29,21 @@ public interface UsuarioInboundPort {
      * Cria um novo usuário no sistema
      * 
      * @param nome Nome do usuário
-     * @param email Email do usuário (Value Object - já validado)
-     * @param cpf CPF do usuário (Value Object - já validado, pode ser null)
+     * @param email Email do usuário
+     * @param cpf CPF do usuário
      * @return Usuário criado
+     *
+     * @throws UsuarioInvalidoException Se os dados forem inválidos
+     * @throws NullPointerException Se algum dos parâmetros for passado como null
      */
-    Usuario criarUsuario(String nome, Email email, CPF cpf);
+    Usuario criarUsuario(String nome, Email email, CPF cpf) throws UsuarioInvalidoException;
     
     /**
      * Busca um usuário por ID
      * @param id ID do usuário
      * @return Usuário encontrado
      */
-    Usuario buscarUsuarioPorId(Long id);
+    Usuario buscarUsuarioPorId(Long id) throws UsuarioNaoEncontradoException;
     
     /**
      * Lista todos os usuários
@@ -50,6 +55,6 @@ public interface UsuarioInboundPort {
      * Remove um usuário
      * @param id ID do usuário a ser removido
      */
-    void removerUsuario(Long id);
+    void removerUsuario(Long id) throws UsuarioNaoEncontradoException;
 }
 

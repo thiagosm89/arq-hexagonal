@@ -97,10 +97,10 @@ public class UsuarioController {
      * PUT/PATCH tem lógica de negócio
      */
     @PutMapping("/{id}")
-    public ResponseEntity<UsuarioResponse> atualizarUsuario(
+    public ResponseEntity<UsuarioResponse> buscarPorId(
             @PathVariable Long id,
             @RequestBody UsuarioRequest request) {
-        UsuarioResponse response = commandService.atualizarUsuario(id, request);
+        UsuarioResponse response = commandService.buscarUsuarioPorId(id);
         return ResponseEntity.ok(response);
     }
 }
