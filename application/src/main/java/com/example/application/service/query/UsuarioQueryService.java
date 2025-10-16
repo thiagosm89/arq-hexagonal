@@ -2,8 +2,8 @@ package com.example.application.service.query;
 
 import com.example.application.service.query.dto.UsuarioListResponse;
 import com.example.application.rest.dto.UsuarioResponse;
-import com.example.infrastructure.persistence.entity.UsuarioEntity;
-import com.example.infrastructure.persistence.repository.UsuarioJpaRepository;
+import com.example.infrastructure.databases.oracle.entity.UsuarioEntity;
+import com.example.infrastructure.databases.oracle.repository.UsuarioJpaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -14,19 +14,19 @@ import java.util.stream.Collectors;
 
 /**
  * Query Service - Operações de LEITURA (Read)
- * 
+ * <p>
  * Padrão CQRS: Separação de Commands e Queries
- * 
+ * <p>
  * Este service implementa queries que fazem BYPASS do Domain.
- * 
+ * <p>
  * BYPASS = Otimização adicional (não faz parte do CQRS)
  * Queries simples PODEM pular Domain quando:
  * - Não há lógica de negócio
  * - São apenas buscas/listagens
  * - Performance é importante
- * 
+ * <p>
  * ⚠️ CUIDADO: Se a query tiver lógica ou regras, DEVE passar por Domain!
- * 
+ * <p>
  * Estrutura:
  * - CQRS: Separa Command/Query (organização)
  * - Bypass: Queries pulam Domain (performance)
@@ -35,67 +35,67 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class UsuarioQueryService {
-    
+
     private final UsuarioJpaRepository usuarioJpaRepository;
-    
+
     /**
      * Lista todos os usuários
      * BYPASS: Vai direto ao repositório JPA (pula Domain)
-     * 
+     * <p>
      * Justificativa: Query simples sem lógica de negócio
      */
     public List<UsuarioListResponse> listarTodosUsuarios() {
         log.info("Query: Listar todos os usuários (BYPASS Domain)");
-        
+
         // Vai DIRETO na Infrastructure (JPA Repository)
         return usuarioJpaRepository.findAll()
-            .stream()
-            .map(this::toListResponse)
-            .collect(Collectors.toList());
+                .stream()
+                .map(this::toListResponse)
+                .collect(Collectors.toList());
     }
-    
+
     /**
      * Busca usuário por ID
      * BYPASS: Vai direto ao repositório JPA
-     * 
+     * <p>
      * Justificativa: Busca simples sem lógica
      */
     public Optional<UsuarioResponse> buscarPorId(Long id) {
         log.info("Query: Buscar usuário por id {} (BYPASS Domain)", id);
-        
+
         // Vai DIRETO na Infrastructure
         return usuarioJpaRepository.findById(id)
-            .map(this::toResponse);
+                .map(this::toResponse);
     }
-    
+
     /**
      * Busca usuário por email
      * BYPASS: Vai direto ao repositório JPA
-     * 
+     * <p>
      * Justificativa: Query simples
      */
     public Optional<UsuarioResponse> buscarPorEmail(String email) {
         log.info("Query: Buscar usuário por email {} (BYPASS Domain)", email);
-        
+
         // Vai DIRETO na Infrastructure
         return usuarioJpaRepository.findByEmail(email)
-            .map(this::toResponse);
+                .map(this::toResponse);
     }
-    
+
     /**
      * Conta total de usuários
      * BYPASS: Estatística simples
      */
     public Long contarUsuarios() {
         log.info("Query: Contar usuários (BYPASS Domain)");
-        
+
         return usuarioJpaRepository.count();
     }
-    
+
     /**
      * Exemplo de query que NÃO deveria fazer bypass:
      * "Buscar usuários ativos que podem receber notificações"
-     * 
+     * <p>
      * Esta query TEM lógica de negócio (o que é "ativo"? "pode receber"?)
      * Então deveria ir por Domain!
      */
@@ -103,20 +103,20 @@ public class UsuarioQueryService {
     //     // NÃO FAZER: isso tem regra de negócio!
     //     // FAZER: chamar um Use Case no Domain
     // }
-    
     private UsuarioResponse toResponse(UsuarioEntity entity) {
         return new UsuarioResponse(
-            entity.getId(),
-            entity.getNome(),
-            entity.getEmail()
+                entity.getId(),
+                entity.getNome(),
+                entity.getEmail(),
+                entity.getCpf()
         );
     }
-    
+
     private UsuarioListResponse toListResponse(UsuarioEntity entity) {
         return new UsuarioListResponse(
-            entity.getId(),
-            entity.getNome(),
-            entity.getEmail()
+                entity.getId(),
+                entity.getNome(),
+                entity.getEmail()
         );
     }
 }

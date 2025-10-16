@@ -1,4 +1,4 @@
-package com.example.infrastructure.persistence.entity;
+package com.example.infrastructure.databases.oracle.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

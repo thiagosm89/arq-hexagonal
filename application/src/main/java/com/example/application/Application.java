@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
  * Classe Principal da Aplicação Spring Boot
  */
 @SpringBootApplication(scanBasePackages = "com.example")
-@EnableJpaRepositories(basePackages = "com.example.infrastructure.persistence.repository")
+@EnableJpaRepositories(basePackages = "com.example.infrastructure.databases.oracle.repository")
 @EntityScan(basePackages = "com.example.infrastructure.persistence.entity")
 public class Application {
     

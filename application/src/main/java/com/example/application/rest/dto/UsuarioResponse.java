@@ -18,6 +18,5 @@ public class UsuarioResponse {
     private String nome;
     private String email;       // Vem de Email (Value Object)
     private String cpf;          // Vem de CPF (Value Object) - pode ser null
-    private String cpfFormatado; // CPF formatado para exibição
 }
 

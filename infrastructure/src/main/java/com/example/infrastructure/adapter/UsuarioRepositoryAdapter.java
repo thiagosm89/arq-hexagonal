@@ -1,9 +1,9 @@
-package com.example.infrastructure.persistence.adapter;
+package com.example.infrastructure.adapter;
 
 import com.example.domain.model.Usuario;
 import com.example.domain.ports.out.UsuarioOutboundPort;
-import com.example.infrastructure.persistence.entity.UsuarioEntity;
-import com.example.infrastructure.persistence.repository.UsuarioJpaRepository;
+import com.example.infrastructure.databases.oracle.entity.UsuarioEntity;
+import com.example.infrastructure.databases.oracle.repository.UsuarioJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

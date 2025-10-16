@@ -1,6 +1,6 @@
-package com.example.infrastructure.persistence.repository;
+package com.example.infrastructure.databases.oracle.repository;
 
-import com.example.infrastructure.persistence.entity.UsuarioEntity;
+import com.example.infrastructure.databases.oracle.entity.UsuarioEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

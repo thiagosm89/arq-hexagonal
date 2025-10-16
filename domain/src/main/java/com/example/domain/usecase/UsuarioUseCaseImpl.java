@@ -5,6 +5,8 @@ import com.example.domain.exception.UsuarioNaoEncontradoException;
 import com.example.domain.model.Usuario;
 import com.example.domain.ports.in.UsuarioInboundPort;
 import com.example.domain.ports.out.UsuarioOutboundPort;
+import com.example.domain.valueobject.CPF;
+import com.example.domain.valueobject.Email;
 
 import java.util.List;
 

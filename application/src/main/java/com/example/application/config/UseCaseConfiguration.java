@@ -33,6 +33,7 @@ public class UseCaseConfiguration {
     public UsuarioInboundPort usuarioInboundPort(UsuarioOutboundPort usuarioOutboundPort) {
         return new UsuarioUseCaseImpl(usuarioOutboundPort);
     }
+
 }
 
 
