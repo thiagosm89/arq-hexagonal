@@ -1,0 +1,213 @@
+@startuml DIAGRAMA-HEXAGONAL-ARQUITETURA
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam classBackgroundColor #F8F9FA
+skinparam classBorderColor #343A40
+skinparam packageBackgroundColor #E9ECEF
+skinparam packageBorderColor #6C757D
+skinparam noteBackgroundColor #FFF3CD
+skinparam noteBorderColor #FFC107
+
+title Arquitetura Hexagonal - Sistema de Usuários\nDiagrama de Classes e Relacionamentos
+
+' ==========================================
+' HEXÁGONO CENTRAL - DOMAIN
+' ==========================================
+package "🎯 DOMAIN (Core Business Logic)" as domain #E8F5E8 {
+    
+    ' Entidade Principal
+    class Usuario {
+        -Long id
+        -String nome
+        -Email email
+        -CPF cpf
+        +criar(String, String, String) : Usuario
+        +isValid() : boolean
+    }
+    
+    ' Value Objects
+    class Email {
+        -String value
+        +of(String) : Email
+        +getValue() : String
+    }
+    
+    class CPF {
+        -String value
+        +of(String) : CPF
+        +getValue() : String
+    }
+    
+    ' Ports (Interfaces)
+    interface UsuarioInboundPort {
+        +criarUsuario(String, Email, CPF) : Usuario
+        +buscarUsuarioPorId(Long) : Usuario
+        +listarTodosUsuarios() : List<Usuario>
+        +removerUsuario(Long) : void
+    }
+    
+    interface UsuarioOutboundPort {
+        +salvar(Usuario) : Usuario
+        +buscarPorId(Long) : Optional<Usuario>
+        +buscarTodos() : List<Usuario>
+        +deletar(Long) : void
+    }
+    
+    ' Use Case Implementation
+    class UsuarioUseCaseImpl {
+        -UsuarioOutboundPort usuarioOutboundPort
+        +criarUsuario(String, Email, CPF) : Usuario
+        +buscarUsuarioPorId(Long) : Usuario
+        +listarTodosUsuarios() : List<Usuario>
+        +removerUsuario(Long) : void
+    }
+    
+    ' Exceptions
+    class UsuarioInvalidoException {
+        +UsuarioInvalidoException(String)
+    }
+    
+    class UsuarioNaoEncontradoException {
+        +UsuarioNaoEncontradoException(String)
+    }
+    
+    ' Relacionamentos Domain
+    Usuario --> Email : contains
+    Usuario --> CPF : contains
+    UsuarioUseCaseImpl ..|> UsuarioInboundPort : implements
+    UsuarioUseCaseImpl --> UsuarioOutboundPort : uses
+    UsuarioUseCaseImpl --> Usuario : creates/returns
+}
+
+' ==========================================
+' DRIVING ADAPTERS (Application)
+' ==========================================
+package "🌐 APPLICATION (Driving Adapters)" as application #E3F2FD {
+    
+    ' REST Controller
+    class UsuarioController {
+        -UsuarioCommandService commandService
+        -UsuarioQueryService queryService
+        +criarUsuario(UsuarioRequest) : ResponseEntity<UsuarioResponse>
+        +buscarUsuarioPorId(Long) : ResponseEntity<UsuarioResponse>
+        +listarUsuarios() : ResponseEntity<UsuarioResponse[]>
+        +removerUsuario(Long) : ResponseEntity<Void>
+    }
+    
+    ' DTOs
+    class UsuarioRequest {
+        -String nome
+        -String email
+        -String cpf
+    }
+    
+    class UsuarioResponse {
+        -Long id
+        -String nome
+        -String email
+        -String cpf
+        -String cpfFormatado
+    }
+    
+    ' Application Services (CQRS)
+    class UsuarioCommandService {
+        -UsuarioInboundPort usuarioInboundPort
+        +criarUsuario(UsuarioRequest) : UsuarioResponse
+        +removerUsuario(Long) : void
+    }
+    
+    class UsuarioQueryService {
+        -UsuarioJpaRepository usuarioJpaRepository
+        +buscarUsuarioPorId(Long) : UsuarioResponse
+        +listarUsuarios() : List<UsuarioListResponse>
+    }
+    
+    ' Configuration
+    class UseCaseConfiguration {
+        +usuarioInboundPort(UsuarioOutboundPort) : UsuarioInboundPort
+    }
+    
+    ' Relacionamentos Application
+    UsuarioController --> UsuarioCommandService : Commands
+    UsuarioController --> UsuarioQueryService : Queries
+    UsuarioCommandService --> UsuarioInboundPort : uses
+    UsuarioQueryService --> UsuarioJpaRepository : bypass
+    UsuarioCommandService --> UsuarioRequest : receives
+    UsuarioCommandService --> UsuarioResponse : returns
+}
+
+' ==========================================
+' DRIVEN ADAPTERS (Infrastructure)
+' ==========================================
+package "💾 INFRASTRUCTURE (Driven Adapters)" as infrastructure #FFF3E0 {
+    
+    ' JPA Entity
+    class UsuarioEntity {
+        -Long id
+        -String nome
+        -String email
+        -String cpf
+    }
+    
+    ' JPA Repository
+    interface UsuarioJpaRepository {
+        +save(UsuarioEntity) : UsuarioEntity
+        +findById(Long) : Optional<UsuarioEntity>
+        +findAll() : List<UsuarioEntity>
+        +deleteById(Long) : void
+    }
+    
+    ' Repository Adapter
+    class UsuarioRepositoryAdapter {
+        -UsuarioJpaRepository jpaRepository
+        +salvar(Usuario) : Usuario
+        +buscarPorId(Long) : Optional<Usuario>
+        +buscarTodos() : List<Usuario>
+        +deletar(Long) : void
+        -toEntity(Usuario) : UsuarioEntity
+        -toDomain(UsuarioEntity) : Usuario
+    }
+    
+    ' Relacionamentos Infrastructure
+    UsuarioRepositoryAdapter ..|> UsuarioOutboundPort : implements
+    UsuarioRepositoryAdapter --> UsuarioJpaRepository : uses
+    UsuarioRepositoryAdapter --> UsuarioEntity : converts
+    UsuarioRepositoryAdapter --> Usuario : converts
+}
+
+' ==========================================
+' DEPENDÊNCIAS ENTRE MÓDULOS
+' ==========================================
+application --> domain : depends on
+infrastructure --> domain : depends on
+application --> infrastructure : depends on
+
+' ==========================================
+' FLUXO CQRS
+' ==========================================
+UsuarioController --> UsuarioCommandService : "Commands\n(Write Operations)"
+UsuarioController --> UsuarioQueryService : "Queries\n(Read Operations)"
+UsuarioCommandService --> UsuarioInboundPort : "Domain Logic"
+UsuarioQueryService --> UsuarioJpaRepository : "Bypass\n(Direct Access)"
+
+' ==========================================
+' CONVERSÕES DE DADOS
+' ==========================================
+UsuarioRequest --> Usuario : "converts via\nCommandService"
+Usuario --> UsuarioResponse : "converts via\nCommandService"
+UsuarioEntity --> Usuario : "converts via\nRepositoryAdapter"
+Usuario --> UsuarioEntity : "converts via\nRepositoryAdapter"
+
+' ==========================================
+' ANOTAÇÕES ARQUITETURAIS
+' ==========================================
+note right of domain : "🎯 DOMAIN\n• Puro (sem frameworks)\n• Value Objects (Email, CPF)\n• Business Logic\n• Port Interfaces\n• Exceptions"
+note right of application : "🌐 APPLICATION\n• Driving Adapters (Controllers)\n• Application Services\n• CQRS Implementation\n• Spring Configuration\n• DTOs"
+note right of infrastructure : "💾 INFRASTRUCTURE\n• Driven Adapters\n• JPA Entities\n• Database Access\n• External Systems\n• Data Conversion"
+
+' ==========================================
+' PRINCÍPIOS ARQUITETURAIS
+' ==========================================
+note bottom : "📋 PRINCÍPIOS:\n• 🎯 Domain: Lógica de negócio pura, sem dependências externas\n• 🌐 Application: Orquestra Domain e Infrastructure\n• 💾 Infrastructure: Implementa portas de saída\n• 🔄 CQRS: Commands → Domain, Queries → Bypass\n• 🔌 Ports: Interfaces que desacoplam camadas\n• 🎭 Adapters: Implementam as portas com tecnologias específicas"
+
+@enduml

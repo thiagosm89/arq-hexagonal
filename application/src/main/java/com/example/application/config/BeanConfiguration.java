@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @ComponentScan(basePackages = {
-    "com.example.domain",
     "com.example.infrastructure",
     "com.example.application"
 })
